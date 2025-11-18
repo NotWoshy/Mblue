@@ -8,9 +8,15 @@ android {
     namespace = "com.example.project_whatsappblue"
     compileSdk = 36
 
+    packaging {
+        resources {
+            excludes += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.example.project_whatsappblue"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -54,4 +60,5 @@ dependencies {
     implementation("androidx.room:room-runtime:2.8.3")
     kapt("androidx.room:room-compiler:2.8.3")
     implementation ("androidx.room:room-ktx:2.8.3")
+    implementation("org.bouncycastle:bcprov-jdk18on:1.78")
 }

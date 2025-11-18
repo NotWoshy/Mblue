@@ -179,9 +179,13 @@ class ChatActivity : AppCompatActivity() {
 
                 val localProfile = loadLocalProfile()
                 if (localProfile != null) {
-                    chatService.sendProfile(localProfile.name, localProfile.imageBase64)
+                    chatService.onSecureConnection = {
+                        chatService.sendProfile(localProfile.name, localProfile.imageBase64)
+                    }
                 }
-                sendUnsentMessages()
+                chatService.onSecureConnection = {
+                    sendUnsentMessages()
+                }
             }
         }
     }
