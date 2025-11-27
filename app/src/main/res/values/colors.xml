@@ -2,4 +2,19 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="dark_background">#18122B</color>
+
+    <color name="dark_container">#393053</color>
+
+    <color name="accent_purple">#635985</color>
+
+    <color name="secondary_purple">#443C68</color>
+
+    <color name="text_primary">#FFFFFF</color>
+
+    <color name="text_hint">#B0B0B0</color>
+
+    <color name="bubble_black">#0B0814</color>
+
 </resources>

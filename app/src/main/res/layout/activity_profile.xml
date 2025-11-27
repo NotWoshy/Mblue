@@ -1,33 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:padding="24dp"
+    android:padding="32dp"
     android:gravity="center"
+    android:background="@color/dark_background"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-
-
-
-    <ImageView
-        android:id="@+id/ivProfile"
+    <androidx.cardview.widget.CardView
         android:layout_width="120dp"
         android:layout_height="120dp"
-        android:src="@drawable/ic_person"
-        android:background="@drawable/circle_bg"
-        android:scaleType="centerCrop"
-        android:layout_marginBottom="16dp" />
+        app:cardCornerRadius="20dp"
+        app:cardElevation="0dp"
+        app:cardBackgroundColor="@android:color/transparent"
+        android:layout_marginBottom="32dp">
+        <ImageView
+            android:id="@+id/ivProfile"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_person"
+            android:scaleType="centerCrop" />
+
+    </androidx.cardview.widget.CardView>
 
     <EditText
         android:id="@+id/etName"
         android:hint="Tu nombre"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp" />
-
-    <Button
+        android:background="@drawable/bg_input_rounded"
+        android:padding="16dp"
+        android:textColor="@color/text_primary"
+        android:textColorHint="@color/text_hint"
+        android:gravity="center"
+        android:inputType="textPersonName" />
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnSave"
         android:text="Guardar perfil"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp" />
+        android:background="@drawable/bg_button_accent"
+        android:textColor="@color/text_primary"
+        android:textStyle="bold"
+        android:layout_marginTop="24dp" />
 </LinearLayout>

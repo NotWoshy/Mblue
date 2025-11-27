@@ -1,13 +1,13 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/chatLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="8dp"
+    android:padding="16dp"
+    android:background="@color/dark_background"
     tools:context=".ChatActivity">
-
-    <!-- Encabezado -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -15,56 +15,73 @@
         android:gravity="center_vertical"
         android:padding="8dp">
 
-        <ImageView
-            android:id="@+id/remoteImage"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_person" />
+        <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@android:color/transparent">
+
+            <ImageView
+                android:id="@+id/remoteImage"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_person" />
+        </androidx.cardview.widget.CardView>
 
         <TextView
             android:id="@+id/remoteName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="  Remote"
+            android:text="Remote User"
             android:textSize="16sp"
-            android:layout_marginEnd="8dp"
-            android:textStyle="bold" />
-
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"
+            android:layout_marginStart="24dp"/>
     </LinearLayout>
 
-    <!-- RecyclerView -->
-
-    <!-- Input -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
-
+        android:layout_weight="1"
+        android:layout_marginBottom="10dp"/>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
+        android:orientation="horizontal"
+        android:background="@drawable/bg_input_rounded"
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="4dp">
         <EditText
             android:id="@+id/inputMsg"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:hint="Type a message" />
-
+            android:hint="Type a message..."
+            android:background="@null"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint"
+            android:padding="12dp"
+            android:textSize="12sp"/>
         <Button
             android:id="@+id/btnSend"
+            style="?android:attr/borderlessButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Send" />
-
+            android:text="Send"
+            android:textColor="@color/accent_purple"
+            android:textStyle="bold"/>
         <Button
             android:id="@+id/btnImage"
+            style="?android:attr/borderlessButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Image" />
+            android:text="Image"
+            android:textStyle="bold"
+            android:textColor="@color/accent_purple"/>
     </LinearLayout>
 
 </LinearLayout>
