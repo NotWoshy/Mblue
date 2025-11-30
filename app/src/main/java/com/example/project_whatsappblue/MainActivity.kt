@@ -13,6 +13,7 @@ import android.os.Bundle
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 
@@ -20,7 +21,7 @@ class MainActivity : AppCompatActivity() {
 
     private val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
 
-    // Vistas del layout
+    // Vistas existentes
     private lateinit var btnEditProfile: LinearLayout
     private lateinit var btnRefresh: LinearLayout
     private lateinit var listView: ListView
@@ -28,7 +29,7 @@ class MainActivity : AppCompatActivity() {
     private val pairedDevices = mutableListOf<BluetoothDevice>()
     private var userProfile: UserProfile? = null
 
-    // Permisos requeridos
+    // Permisos Android 12+
     @RequiresApi(Build.VERSION_CODES.S)
     private val permissions = arrayOf(
         Manifest.permission.BLUETOOTH,
@@ -44,68 +45,52 @@ class MainActivity : AppCompatActivity() {
         const val PREFS_NAME = "UserProfilePrefs"
     }
 
-    // Callback para cuando se activa el Bluetooth
-    private val requestEnableBt = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode != Activity.RESULT_OK) {
-            Toast.makeText(this, "Bluetooth es requerido", Toast.LENGTH_SHORT).show()
-        } else {
-            // SOLUCIÓN AL ERROR: Verificar permiso antes de cargar dispositivos
-            if (hasBluetoothPermission()) {
+    private val requestEnableBt =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode != Activity.RESULT_OK) {
+                Toast.makeText(this, "Bluetooth es requerido", Toast.LENGTH_SHORT).show()
+            } else {
                 loadPairedDevices()
             }
         }
-    }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // 1. Vincular vistas
+        // Vincular vistas
         listView = findViewById(R.id.pairedList)
         btnEditProfile = findViewById(R.id.btnEditProfile)
         btnRefresh = findViewById(R.id.btnRefreshPaired)
 
-        // Cargar datos en memoria
         loadUserProfileData()
-
-        if (bluetoothAdapter == null) {
-            Toast.makeText(this, "Bluetooth no soportado", Toast.LENGTH_SHORT).show()
-        }
-
-        // Pedir permisos y activar BT
         checkAndRequestPermissions()
         ensureBluetoothEnabled()
+        loadPairedDevices()
 
-        // 2. Botón Actualizar
+        // Botón refrescar lista
         btnRefresh.setOnClickListener {
-            if (hasBluetoothPermission()) {
-                loadPairedDevices()
-                Toast.makeText(this, "Lista actualizada", Toast.LENGTH_SHORT).show()
-            } else {
-                checkAndRequestPermissions()
-            }
+            loadPairedDevices()
+            Toast.makeText(this, "Lista actualizada", Toast.LENGTH_SHORT).show()
         }
 
-        // 3. Botón Editar Perfil
+        // Botón editar perfil
         btnEditProfile.setOnClickListener {
             val intent = Intent(this, ProfileActivity::class.java)
             startActivityForResult(intent, REQUEST_EDIT_PROFILE)
         }
 
-        // 4. Click en lista
+        // Presionar un dispositivo → iniciar ChatActivity
         listView.setOnItemClickListener { _, _, position, _ ->
             val device = pairedDevices[position]
             val intent = Intent(this, ChatActivity::class.java)
             intent.putExtra("deviceAddress", device.address)
             startActivity(intent)
         }
-
-        // Carga inicial segura
-        if (hasBluetoothPermission()) {
-            loadPairedDevices()
-        }
     }
 
+    // Cargar datos SOLO en memoria
     private fun loadUserProfileData() {
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val name = prefs.getString("name", null)
@@ -118,6 +103,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+
         if (requestCode == REQUEST_EDIT_PROFILE && resultCode == Activity.RESULT_OK) {
             val name = data?.getStringExtra("name") ?: return
             val imageBase64 = data.getStringExtra("imageBase64") ?: return
@@ -125,20 +111,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Función auxiliar para verificar permisos rápidamente
-    private fun hasBluetoothPermission(): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            return ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
-        }
-        return true // En versiones viejas no se requería este permiso específico en tiempo de ejecución de la misma forma
-    }
-
     private fun ensureBluetoothEnabled(): Boolean {
-        // SOLUCIÓN AL ERROR: Verificación explicita antes de tocar el adaptador
-        if (!hasBluetoothPermission()) {
-            return false
-        }
-
         if (bluetoothAdapter?.isEnabled == false) {
             val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             requestEnableBt.launch(enableBtIntent)
@@ -156,22 +129,20 @@ class MainActivity : AppCompatActivity() {
                 ActivityCompat.requestPermissions(this, needed.toTypedArray(), 100)
             }
         } else {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 101)
+            if (ActivityCompat.checkSelfPermission(
+                    this, Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                    101
+                )
             }
         }
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun loadPairedDevices() {
-        // SOLUCIÓN AL ERROR: "Guard clause" (Cláusula de guardia)
-        // Si no hay permiso, detenemos la función aquí mismo. El compilador se queda feliz.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                return
-            }
-        }
-
         pairedDevices.clear()
         val adapter = bluetoothAdapter
 
@@ -179,29 +150,31 @@ class MainActivity : AppCompatActivity() {
             val bonded = adapter.bondedDevices
 
             if (bonded != null && bonded.isNotEmpty()) {
-                val filteredDevices = mutableListOf<BluetoothDevice>()
 
-                for (device in bonded) {
-                    val deviceClass = device.bluetoothClass?.majorDeviceClass
-
-                    if (deviceClass != BluetoothClass.Device.Major.PHONE &&
-                        deviceClass != BluetoothClass.Device.Major.COMPUTER &&
-                        deviceClass != BluetoothClass.Device.Major.NETWORKING) {
-                        continue
-                    }
-                    filteredDevices.add(device)
+                val filtered = bonded.filter { device ->
+                    val cls = device.bluetoothClass?.majorDeviceClass
+                    cls == BluetoothClass.Device.Major.PHONE ||
+                            cls == BluetoothClass.Device.Major.COMPUTER ||
+                            cls == BluetoothClass.Device.Major.NETWORKING
                 }
 
-                if (filteredDevices.isNotEmpty()) {
-                    pairedDevices.addAll(filteredDevices)
-                    val customAdapter = PairedDeviceAdapter(this, pairedDevices)
-                    listView.adapter = customAdapter
+                if (filtered.isNotEmpty()) {
+                    pairedDevices.addAll(filtered)
+                    listView.adapter = PairedDeviceAdapter(this, pairedDevices)
                 } else {
-                    listView.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, listOf("No valid devices found"))
+                    listView.adapter = ArrayAdapter(
+                        this, android.R.layout.simple_list_item_1,
+                        listOf("No valid devices found")
+                    )
                 }
+
             } else {
-                listView.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, listOf("No paired devices"))
+                listView.adapter = ArrayAdapter(
+                    this, android.R.layout.simple_list_item_1,
+                    listOf("No paired devices")
+                )
             }
+
         } else {
             listView.adapter = null
         }
